@@ -29,11 +29,12 @@ function playerMove(player, board, row, col)
 
 function GameManager(){
     let history = []; //array to hold board states
-    let moveCount = 0;
+    let moveCount = 1;
+    let undo_redo_flag = false;
     let currentBoard = createGameboard();
 
     return {
-        getBoard: () => currentBoard.map(row => [...row]),
+        getBoard: () => currentBoard,
         makeMove: (player, row, col) => {
             const newBoard = playerMove(player, currentBoard, row, col);
             if (newBoard !== currentBoard){
