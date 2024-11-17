@@ -30,29 +30,26 @@ function playerMove(player, board, row, col)
 function GameManager(){
     let history = []; //array to hold board states
     let moveCount = 0;
-    let undo_redo_flag = false;
     let currentBoard = createGameboard();
 
     return {
-        getBoard: () => currentBoard,
+        getBoard: () => currentBoard.map(row => [...row]),
         makeMove: (player, row, col) => {
             const newBoard = playerMove(player, currentBoard, row, col);
             if (newBoard !== currentBoard){
                 if(undo_redo_flag === true && moveCount !== history.length){
-                    history = history.slice(moveCount, history.length); //Delete history from the current move onwards
                     undo_redo_flag = false;
-                    console.log("why");
                 }
                 history.push(currentBoard); // Save the current state before updating
                 ++moveCount;
                 currentBoard = newBoard;
-                history.push(currentBoard) // Push the new state as well
+                history.push(newBoard); // Push the new state as well
             }
         },
         undo: () => {
             if(moveCount > 0){
                 undo_redo_flag = true;
-                console.log(history[--moveCount]);
+                currentBoard = history[--moveCount];
             } else {
                 console.log("Nothing to undo");
             }
@@ -60,7 +57,7 @@ function GameManager(){
         redo: () => {
             if(history.length > moveCount){
                 undo_redo_flag = true;
-                console.log(history[3]);
+                currentBoard = history[++moveCount];
             } else{
                 console.log("Nothing to redo");
             }
@@ -80,10 +77,14 @@ console.log(gameManager.getBoard());
 
 gameManager.undo();
 
+gameManager.makeMove(player1, 2, 2);
+console.log(gameManager.getBoard());
+
+gameManager.undo();
+console.log(gameManager.getBoard());
 
 gameManager.redo();
-
-
+console.log(gameManager.getBoard());
 
 
 
