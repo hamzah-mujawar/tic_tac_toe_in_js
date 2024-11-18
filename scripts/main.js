@@ -14,78 +14,99 @@ function Player(name, marker)
 
 function playerMove(player, board, row, col)
 {
+    //check if the move is valid
     if((row >= board.length || col >= board[0].length) || (row < 0 || col < 0)){
-        console.log("Invalid move");
-        return board;
+        return { success: false, message: "Invalid, move", board };
     }
+    //check if the cell is occupied or not
     if(!(board[row][col] === 0)){
         console.log("Cell is already occupied");
         return board;
     }
-    return board.map((rowArr, r) =>
-        rowArr.map((cell, c) => (r === row && c === col ? player.marker : cell))
-    );
+    //copying the board
+    const newBoard = board.map((rowArr, r) => (r === row ? [...rowArr] : rowArr));
+    newBoard[row][col] = player.marker;
+
+    return { success: true, board: newBoard };
 }
 
 function GameManager(){
     let history = []; //array to hold board states
-    let moveCount = 1;
-    let undo_redo_flag = false;
+    let moveCount = 0;
     let currentBoard = createGameboard();
 
     return {
-        getBoard: () => currentBoard,
+        getBoard: () => currentBoard.map(row => [...row]),
         makeMove: (player, row, col) => {
-            const newBoard = playerMove(player, currentBoard, row, col);
-            if (newBoard !== currentBoard){
-                if(undo_redo_flag === true && moveCount !== history.length){
-                    undo_redo_flag = false;
-                }
-                history.push(currentBoard); // Save the current state before updating
-                ++moveCount;
-                currentBoard = newBoard;
-                history.push(newBoard); // Push the new state as well
+            const moveResult = playerMove(player, currentBoard, row, col);
+
+            //Handle invalid moves
+            if(!moveResult.success){
+                console.log(moveResult.message);
+                return;
             }
+            const delta = {
+                row,
+                col,
+                prevValue: currentBoard[row][col],
+                newValue: player.marker,
+            };
+            if(moveCount < history.length){
+                history = history.slice(0, moveCount);
+            }
+            history.push(delta);
+            moveCount++;
+            currentBoard = moveResult.board;
         },
         undo: () => {
             if(moveCount > 0){
-                undo_redo_flag = true;
-                currentBoard = history[--moveCount];
+                moveCount--;
+                const delta = history[moveCount];
+
+                currentBoard = currentBoard.map((rowArr, r) => (r === delta.row ? [...rowArr] : rowArr));
+                currentBoard[delta.row][delta.col] = delta.prevValue;
             } else {
                 console.log("Nothing to undo");
             }
         },
         redo: () => {
-            if(history.length > moveCount){
-                undo_redo_flag = true;
-                currentBoard = history[++moveCount];
+            if(moveCount < history.length){
+                const delta = history[moveCount];
+                
+                currentBoard = currentBoard.map((rowArr, r) => (r === delta.row ? [...rowArr] : rowArr));
+                moveCount++;
+                currentBoard[delta.row][delta.col] = delta.newValue;
             } else{
                 console.log("Nothing to redo");
             }
         }
     }
 }
-const player1 = Player("smth", "X");
-const player2 = Player("smthelse", "O");
+
+const player1 = Player("Player 1", "X");
+const player2 = Player("Player 2", "O");
 
 const gameManager = GameManager();
 
+gameManager.makeMove(player1, 0, 0); 
+gameManager.makeMove(player2, 1, 1); 
 
-gameManager.makeMove(player1, 0, 0); // Player 1 makes a move
-gameManager.makeMove(player2, 1, 1); // Player 2 makes a move
-
+console.log("Board after two moves:");
 console.log(gameManager.getBoard());
 
 gameManager.undo();
+console.log("Board after undo:");
+console.log(gameManager.getBoard());
 
-gameManager.makeMove(player1, 2, 2);
+gameManager.makeMove(player1, 2, 2); 
+console.log("Board after new move:");
 console.log(gameManager.getBoard());
 
 gameManager.undo();
+console.log("Board after undo:");
 console.log(gameManager.getBoard());
 
 gameManager.redo();
+console.log("Board after redo:");
 console.log(gameManager.getBoard());
-
-
 
