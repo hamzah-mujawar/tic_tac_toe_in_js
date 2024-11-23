@@ -32,7 +32,8 @@ function playerMove(player, board, row, col)
     return { success: true, board: newBoard };
 }
 
-function GameManager(){
+function GameManager()
+{
     let history = []; // array to store the changes the players make to the board
     let moveCount = 0;
     let currentBoard = createGameboard();
