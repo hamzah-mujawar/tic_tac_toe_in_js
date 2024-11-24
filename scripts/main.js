@@ -12,6 +12,8 @@ function Player(name, marker)
     return { name, marker };
 }
 
+
+
 function playerMove(player, board, row, col)
 {
     //check if the move is valid
@@ -86,8 +88,15 @@ function GameManager(player1, player2){
     return {
 	// getBoard does a deep copy of current board.
         getBoard: () => currentBoard.map(row => [...row]),
-        makeMove: (player, row, col) => {
-            const moveResult = playerMove(player, currentBoard, row, col);
+        makeMove: (row, col) => {
+	    //checking if the game is already over before making any moves
+	    if(gameState.isOver()){
+		console.log("Game over, no more moves allowed");
+		return;
+	    }
+	    //getting whose turn it is to make a move
+	    const currentPlayer = gameState.getCurrentPlayer();
+            const moveResult = playerMove(currentPlayer, currentBoard, row, col);
 
             //Handle invalid moves
             if(!moveResult.success){
@@ -103,7 +112,7 @@ function GameManager(player1, player2){
                 row,
                 col,
                 prevValue: currentBoard[row][col],
-                newValue: player.marker,
+                newValue: currentPlayer.marker,
             };
 	    /*
 	     *if for example: history has 5 elements in its array, now the player undos say 2 times and then makes a move
@@ -120,6 +129,20 @@ function GameManager(player1, player2){
             moveCount++;
 	    //set currentBoard to the board with the new move.
             currentBoard = moveResult.board;
+
+	    //checking if the move wins the game
+	    if(checkWinCondition(currentBoard, currentPlayer)){
+		console.log(`${currentPlayer.name} wins`);
+		gameState.endGame(currentPlayer);
+	    }
+	    else if (currentBoard.flat().every(cell => cell !== 0)){
+		console.log("It's a draw");
+		gameState.endGame(null);//setting to null means that there's no winners
+	    }
+	    //otherwise we just keep playing
+	    else{
+		gameState.nextTurn();
+	    }
         },
         undo: () => {
             if(moveCount > 0){
@@ -128,6 +151,10 @@ function GameManager(player1, player2){
 
                 currentBoard = currentBoard.map((rowArr, r) => (r === delta.row ? [...rowArr] : rowArr));
                 currentBoard[delta.row][delta.col] = delta.prevValue;
+
+
+		gameState.nextTurn(); //advance turn
+		console.log("undone");
             } else {
                 console.log("Nothing to undo");
             }
@@ -139,46 +166,52 @@ function GameManager(player1, player2){
                 currentBoard = currentBoard.map((rowArr, r) => (r === delta.row ? [...rowArr] : rowArr));
                 moveCount++;
                 currentBoard[delta.row][delta.col] = delta.newValue;
+
+		gameState.nextTurn();//advance turn
             } else{
                 console.log("Nothing to redo");
             }
-        }
+        },
+	//exposing GameState methods
+	getCurrentPlayer: gameState.getCurrentPlayer,
+	isGameover: gameState.isOver,
+	getWinner: gameState.getWinner,
     };
 }
 
+// Example usage
 const player1 = Player("Player 1", "X");
 const player2 = Player("Player 2", "O");
 
-const gameManager = GameManager();
+const gameManager = GameManager(player1, player2);
 
-gameManager.makeMove(player1, 0, 0); 
-gameManager.makeMove(player2, 1, 1); 
-
-console.log("Board after two moves:");
+console.log(`Current Player: ${gameManager.getCurrentPlayer().name}`);
+gameManager.makeMove(0, 0);
+console.log(`Board after Player 1 move:`);
 console.log(gameManager.getBoard());
 
+gameManager.makeMove(1, 1);
+console.log(`Board after Player 2 move:`);
+console.log(gameManager.getBoard());
+
+gameManager.makeMove(0, 1);
+console.log(gameManager.getBoard());
+gameManager.makeMove(1, 0);
+console.log(gameManager.getBoard());
 gameManager.undo();
-console.log("Board after undo:");
-console.log(gameManager.getBoard());
-
+console.log(`Current Player: ${gameManager.getCurrentPlayer().name}`);
 gameManager.undo();
-console.log("Board after undo:");
+console.log(`Current Player: ${gameManager.getCurrentPlayer().name}`);
 console.log(gameManager.getBoard());
-
-gameManager.redo();
-console.log("Board after redo:");
+gameManager.makeMove(1, 0);
 console.log(gameManager.getBoard());
-
-
-gameManager.makeMove(player1, 2, 2); 
-console.log("Board after new move:");
+gameManager.makeMove(0, 2); 
 console.log(gameManager.getBoard());
-
-gameManager.undo();
-console.log("Board after undo:");
+gameManager.makeMove(2, 0);
 console.log(gameManager.getBoard());
+console.log(`Winner: ${gameManager.getWinner().name || "Draw"}`);
 
-gameManager.redo();
-console.log("Board after redo:");
-console.log(gameManager.getBoard());
+//currently we have a bug and for some reason it's not detecting column wins properly,
+//otherwise the logic for the undo/redo and the turns seems to be working well
+//the logic for the win conditions and draw conditions are good as well
 
