@@ -32,11 +32,57 @@ function playerMove(player, board, row, col)
     return { success: true, board: newBoard };
 }
 
-function GameManager(){
+function GameState(player1, player2)
+{
+    let currentPlayer = player1; //starting with player 1
+    let winner = null; //variable that tracks who won
+    let isGameOver = false; //variable to track if the game is over or not
+
+    return {
+	getCurrentPlayer: () => currentPlayer,
+	getWinner: () => winner,
+	isOver: () => isGameOver,
+	nextTurn: () => {
+	    if(isGameOver){
+		console.log("Game is already over");
+		return;
+	    }
+	    currentPlayer = currentPlayer === player1 ? player2 : player1;
+	},
+	endGame: (winningPlayer) => {
+	    isGameOver = true;
+	    winner = winningPlayer;
+	},
+	reset: () => {
+	    currentPlayer = player1;
+	    winner = null;
+	    isGameOver = false;
+	},
+    };
+}
+function GameManager(player1, player2){
     let history = []; // array to store the changes the players make to the board
     let moveCount = 0;
     let currentBoard = createGameboard();
+    const gameState = GameState(player1, player2);
 
+    const checkWinCondition = (board, player) => {
+	const marker = player.marker;
+	const rows = board.length;
+	const cols = board[0].length;
+
+	//checking rows and columns for three in a rows
+	for(let i = 0; i < rows; i++){
+	    if(board[i].every(cell => cell === marker)) return true;
+	    if(board[i].every(row => row[i] === marker)) return true;
+	}
+	//checking diagonals
+	if(board.every((row, idx) => row[idx] === marker)) return true;
+	if(board.every((row, idx) => row[cols - idx - 1] === marker)) return true;
+
+	//if no three in a row then we just return false
+	return false;
+    };
     return {
 	// getBoard does a deep copy of current board.
         getBoard: () => currentBoard.map(row => [...row]),
