@@ -63,6 +63,25 @@ function GameState(player1, player2)
 	},
     };
 }
+function handleCellClick(rowIndex, colIndex, gameManager){
+    const cell = gameManager.getBoard()[rowIndex][colIndex]; //Get the current cell value
+
+    if(gameManager.isGameover()){
+	alert("Game is over. No more moves left");
+	return;
+    }
+    if(cell !== 0){
+	alert("Cell is already occupied. Please choose another cell");
+	return;
+    }
+
+    gameManager.makeMove(rowIndex, colIndex);
+
+    if(gameManager.isGameOver()){
+	const winner = gameManager.getWinner();
+	alert(winner ? `${winner.name} wins!` : "It's a draw");
+    }
+}
 function DisplayHandler()
 {
     return {
@@ -206,16 +225,18 @@ function GameManager(player1, player2, displayHandler, grid)
     };
 }
 
-
-
 const player1 = Player("Player 1", "X");
 const player2 = Player("Player 2", "O");
 
 const displayHandler = DisplayHandler();
 const gameManager = GameManager(player1, player2, displayHandler, grid);
 
-gameManager.makeMove(0, 0);
-gameManager.makeMove(1, 1);
-gameManager.makeMove(2, 2);
-gameManager.makeMove(0, 1);
+//adding event listeners to each cell
+grid.querySelectorAll('.cell').forEach((cell, index) => {
+    const row = Math.floor(index / 3);
+    const col = index % 3;
+    cell.addEventListener('click', () => handleCellClick(row, col, gameManager));
+});
 
+//initialize the game by rendering the empty board
+displayHandler.renderBoard(gameManager.getBoard(), grid);
