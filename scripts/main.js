@@ -1,3 +1,6 @@
+//DOM elements for the grid to place our X and Os' on
+const grid = document.getElementById("grid");
+
 function createGameboard()
 {
     return [
@@ -11,8 +14,6 @@ function Player(name, marker)
 {
     return { name, marker };
 }
-
-
 
 function playerMove(player, board, row, col)
 {
@@ -62,7 +63,22 @@ function GameState(player1, player2)
 	},
     };
 }
-function GameManager(player1, player2){
+function DisplayHandler()
+{
+    return {
+	renderBoard: (board, grid) => {
+	    board.forEach( (row, rowIndex) => {
+		row.forEach( (cell, colIndex) => {
+		    const cellDiv = grid.children[rowIndex * board[0].length + colIndex]; //finding the corresponding grid child
+		    cellDiv.innerHTML = cell === 0 ? "" : cell; //empty string for unoccupied cells
+		});
+	    });
+	}
+    };
+}
+
+function GameManager(player1, player2, displayHandler, grid)
+{
     let history = []; // array to store the changes the players make to the board
     let moveCount = 0;
     let currentBoard = createGameboard();
@@ -87,6 +103,12 @@ function GameManager(player1, player2){
 	//if no three in a row then we just return false
 	return false;
     };
+
+    //function that gets called everytime a change is made to the board
+    const updateDisplay = () => {
+	displayHandler.renderBoard(currentBoard, grid);
+    };
+    
     return {
 	// getBoard does a deep copy of current board.
         getBoard: () => currentBoard.map(row => [...row]),
@@ -145,6 +167,8 @@ function GameManager(player1, player2){
 	    else{
 		gameState.nextTurn();
 	    }
+	    
+	    updateDisplay(); //automatically update the board
         },
         undo: () => {
             if(moveCount > 0){
@@ -156,7 +180,7 @@ function GameManager(player1, player2){
 
 
 		gameState.nextTurn(); //advance turn
-		console.log("undone");
+		updateDisplay();
             } else {
                 console.log("Nothing to undo");
             }
@@ -170,6 +194,7 @@ function GameManager(player1, player2){
                 currentBoard[delta.row][delta.col] = delta.newValue;
 
 		gameState.nextTurn();//advance turn
+		updateDisplay();
             } else{
                 console.log("Nothing to redo");
             }
@@ -181,34 +206,16 @@ function GameManager(player1, player2){
     };
 }
 
+
+
 const player1 = Player("Player 1", "X");
 const player2 = Player("Player 2", "O");
 
-const gameManager = GameManager(player1, player2);
+const displayHandler = DisplayHandler();
+const gameManager = GameManager(player1, player2, displayHandler, grid);
 
-console.log(`Current Player: ${gameManager.getCurrentPlayer().name}`);
 gameManager.makeMove(0, 0);
-console.log(`Board after Player 1 move:`);
-console.log(gameManager.getBoard());
-
 gameManager.makeMove(1, 1);
-console.log(`Board after Player 2 move:`);
-console.log(gameManager.getBoard());
-
+gameManager.makeMove(2, 2);
 gameManager.makeMove(0, 1);
-console.log(gameManager.getBoard());
-gameManager.makeMove(1, 0);
-console.log(gameManager.getBoard());
-gameManager.undo();
-console.log(`Current Player: ${gameManager.getCurrentPlayer().name}`);
-gameManager.undo();
-console.log(`Current Player: ${gameManager.getCurrentPlayer().name}`);
-console.log(gameManager.getBoard());
-gameManager.makeMove(1, 0);
-console.log(gameManager.getBoard());
-gameManager.makeMove(0, 2); 
-console.log(gameManager.getBoard());
-gameManager.makeMove(2, 0);
-console.log(gameManager.getBoard());
-console.log(`Winner: ${gameManager.getWinner()?.name || "Draw"}`);
 
