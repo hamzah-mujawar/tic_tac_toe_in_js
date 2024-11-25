@@ -1,0 +1,36 @@
+* Tic-Tac-Toe Game
+
+This is a simple implementation of the Tic-Tac-Toe game using HTML, CSS, and JavaScript. The game allows two players to take turns, place their markers (X or O), and determine the winner. It also includes functionality for undo, redo, and resetting the game.
+
+** Features
+- 3x3 grid layout for the game board
+- Players can click on cells to make moves
+- Undo and Redo functionality to navigate through moves
+- Reset button to start a new game
+- Displays the winner or declares a draw when the game is over
+
+** Setup
+
+1. Clone the repository or download the files:
+   - `index.html`
+   - `styles/style.css`
+   - `scripts/main.js`
+
+2. Open the `index.html` file in your web browser to start playing the game.
+
+** Game Rules
+- Players alternate turns, placing their markers (X or O) in an empty cell.
+- The first player to get 3 of their markers in a row (horizontally, vertically, or diagonally) wins.
+- If the grid is filled without a winner, the game ends in a draw.
+
+** Controls
+- Click on an empty cell in the grid to make your move.
+- Use the Undo button to undo your previous move.
+- Use the Redo button to redo a move that was undone.
+- Use the Reset button to restart the game.
+
+** Dependencies
+- This game uses standard HTML, CSS, and JavaScript. No external libraries are required.
+
+** License
+- Feel free to modify and use this code as you like. No restrictions.
