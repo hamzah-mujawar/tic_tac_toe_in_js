@@ -1,5 +1,8 @@
 //DOM elements for the grid to place our X and Os' on
 const grid = document.getElementById("grid");
+const reset = document.getElementById("reset");
+const undo = document.getElementById("undo");
+const redo = document.getElementById("redo");
 
 function createGameboard()
 {
@@ -218,6 +221,14 @@ function GameManager(player1, player2, displayHandler, grid)
                 console.log("Nothing to redo");
             }
         },
+	reset: () => {
+	    currentBoard = createGameboard();
+	    gameState.reset();
+	    history = [];
+	    moveCount = 0;
+
+	    updateDisplay();
+	},
 	//exposing GameState methods
 	getCurrentPlayer: gameState.getCurrentPlayer,
 	isGameover: gameState.isOver,
@@ -240,3 +251,15 @@ grid.querySelectorAll('.cell').forEach((cell, index) => {
 
 //initialize the game by rendering the empty board
 displayHandler.renderBoard(gameManager.getBoard(), grid);
+
+reset.addEventListener("click", ()=>{
+    gameManager.reset();
+});
+
+undo.addEventListener("click", ()=>{
+    gameManager.undo();
+});
+
+redo.addEventListener("click", ()=>{
+    gameManager.redo();
+});
