@@ -76,7 +76,9 @@ function GameManager(player1, player2){
 	//checking rows and columns for three in a rows
 	for(let i = 0; i < rows; i++){
 	    if(board[i].every(cell => cell === marker)) return true;
-	    if(board[i].every(row => row[i] === marker)) return true;
+	}
+	for(let i = 0; i < cols; i++){
+	    if(board.every(row => row[i] === marker)) return true;
 	}
 	//checking diagonals
 	if(board.every((row, idx) => row[idx] === marker)) return true;
@@ -179,7 +181,6 @@ function GameManager(player1, player2){
     };
 }
 
-// Example usage
 const player1 = Player("Player 1", "X");
 const player2 = Player("Player 2", "O");
 
@@ -209,9 +210,5 @@ gameManager.makeMove(0, 2);
 console.log(gameManager.getBoard());
 gameManager.makeMove(2, 0);
 console.log(gameManager.getBoard());
-console.log(`Winner: ${gameManager.getWinner().name || "Draw"}`);
-
-//currently we have a bug and for some reason it's not detecting column wins properly,
-//otherwise the logic for the undo/redo and the turns seems to be working well
-//the logic for the win conditions and draw conditions are good as well
+console.log(`Winner: ${gameManager.getWinner()?.name || "Draw"}`);
 
