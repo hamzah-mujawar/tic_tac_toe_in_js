@@ -69,7 +69,7 @@ function GameState(player1, player2)
 function handleCellClick(rowIndex, colIndex, gameManager){
     const cell = gameManager.getBoard()[rowIndex][colIndex]; //Get the current cell value
 
-    if(gameManager.isGameover()){
+    if(gameManager.isGameOver()){
 	alert("Game is over. No more moves left");
 	return;
     }
@@ -231,7 +231,7 @@ function GameManager(player1, player2, displayHandler, grid)
 	},
 	//exposing GameState methods
 	getCurrentPlayer: gameState.getCurrentPlayer,
-	isGameover: gameState.isOver,
+	isGameOver: gameState.isOver,
 	getWinner: gameState.getWinner,
     };
 }
